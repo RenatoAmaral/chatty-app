@@ -3,12 +3,12 @@ import ChatBar from "./ChatBar.jsx";
 import MessageList from "./MessageList.jsx";
 import Message from "./Message.jsx";
 
-
+const ws = new WebSocket("ws://localhost:3001/");
 ////////////////////////////////////
 //   React App Parent Component   //
 ////////////////////////////////////
 
-export default class App extends Component {
+class App extends Component {
 
   constructor(props){
     super(props);
@@ -37,7 +37,11 @@ export default class App extends Component {
 /////////////////////////////////////////////////
 
   componentDidMount() {
+
+
     console.log("componentDidMount <App />");
+
+
 
     setTimeout(() => {
 
@@ -64,6 +68,7 @@ export default class App extends Component {
 
     const messages = this.state.messages.concat(newMessage)
     this.setState({messages: messages})
+    ws.send(JSON.stringify(messages));
   }
 
 
@@ -89,3 +94,4 @@ export default class App extends Component {
 
 }
 
+export default App;
