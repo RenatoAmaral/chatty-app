@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import ChatBar from "./ChatBar.jsx";
 import MessageList from "./MessageList.jsx";
 import Message from "./Message.jsx";
+import uuidv4 from 'uuid/v4';
 
 const ws = new WebSocket("ws://localhost:3001/");
 ////////////////////////////////////
@@ -14,66 +15,53 @@ class App extends Component {
     super(props);
 
     this.state = {
+      currentUser: {name: 'Anonymous'},
+      messages: []
 
-      currentUser: {name: "Bob"}, // optional. if currentUser is not defined, it means the user is Anonymous
-
-      messages: [
-        {
-          id: "1",
-          username: "Bob",
-          content: "Has anyone seen my marbles?",
-        },
-        {
-          id: "2",
-          username: "Anonymous",
-          content: "No, I think you lost them. You lost your marbles Bob. You lost them for good."
-        }
-      ]
     }
   }
+
 
 /////////////////////////////////////////////////
 //    Helper Functions requiring this.state    //
 /////////////////////////////////////////////////
 
+// On successful connection, wait for incoming messages from server
+
   componentDidMount() {
 
 
-    console.log("componentDidMount <App />");
+    const self = this;
+    ws.onmessage = function (event) {
+      const message = JSON.parse(event.data);
+      const newMessages = self.state.messages.concat(message)
+
+       //let message = this.state.messages.concat(data.content);
+      // console.log("state:",message)
+      console.log("receiving:", newMessages)
+
+      self.setState({ messages: newMessages });
 
 
 
-    setTimeout(() => {
-
-      console.log("Simulating incoming message");
-
-      // Add a new message to the list of messages in the data store
-
-      const newMessage = {id: 3, username: "Michelle", content: "Hello there!"};
-      const messages = this.state.messages.concat(newMessage)
-
-      // Update the state of the app component.
-      // Calling setState will trigger a call to render() in App and all child components.
-
-      this.setState({messages: messages})
-    }, 3000);
+    }
   }
 
   addNewMessage(content){
     const newMessage = {
-      id: Math.floor((Math.random()* 100) + 3),
+      id: uuidv4(),
       username: this.state.currentUser.name,
       content: content
     };
 
     const messages = this.state.messages.concat(newMessage)
-    this.setState({messages: messages})
-    ws.send(JSON.stringify(messages));
+    this.setState({ messages: messages })
+    ws.send(JSON.stringify(newMessage));
   }
 
 
   render() {
-    console.log("Rendering <App/>");
+
     return (
 
       <div>
@@ -84,7 +72,7 @@ class App extends Component {
 
         </main>
 
-        <ChatBar addNewMessage={this.addNewMessage.bind(this)} currentUser = {this.state.currentUser} />
+        <ChatBar addNewMessage={this.addNewMessage.bind(this)} currentUser={this.state.currentUser} />
 
       </div>
 

@@ -14,7 +14,7 @@ class ChatBar extends Component {
 
   render() {
     const currentUser = this.props.currentUser;
-    console.log("Rendering <ChatBar/>");
+
     return (
       <footer className="chatbar">
         <input
