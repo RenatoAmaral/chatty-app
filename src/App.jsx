@@ -59,6 +59,13 @@ class App extends Component {
     ws.send(JSON.stringify(newMessage));
   }
 
+  addNewUser(content){
+
+    console.log("state:", content);
+
+     this.setState({ currentUser: { name: content }})
+  }
+
 
   render() {
 
@@ -72,7 +79,7 @@ class App extends Component {
 
         </main>
 
-        <ChatBar addNewMessage={this.addNewMessage.bind(this)} currentUser={this.state.currentUser} />
+        <ChatBar addNewMessage={this.addNewMessage.bind(this)} addNewUser={this.addNewUser.bind(this)} currentUser={this.state.currentUser} />
 
       </div>
 
