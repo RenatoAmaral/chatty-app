@@ -15,10 +15,10 @@ class App extends Component {
     super(props);
 
     this.state = {
-      currentUser: {name: 'Anonymous'},
-      messages: []
+          currentUser: { name: 'Anonymous' },
+          messages: []
 
-    }
+        }
   }
 
 
@@ -30,41 +30,53 @@ class App extends Component {
 
   componentDidMount() {
 
+    console.log("Connected to chatty-app server");
 
-    const self = this;
-    ws.onmessage = function (event) {
+    ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      const newMessages = self.state.messages.concat(message)
 
-       //let message = this.state.messages.concat(data.content);
-      // console.log("state:",message)
-      console.log("receiving:", newMessages)
+      switch(message.type) {
+        case "incomingMessage":
+          const newMessages = this.state.messages.concat(message)
+          console.log("newMessages:", newMessages);
+          this.setState({ messages: newMessages });
+        break;
 
-      self.setState({ messages: newMessages });
+        case "incomingNotification":
+        console.log( "incomingNotification");
+          this.setState({messages: [...this.state.messages, message]})
+        break;
 
-
-
+        default:
+        throw new Error ("Unknown event type " + message.type);
+      }
     }
   }
 
   addNewMessage(content){
+
     const newMessage = {
       id: uuidv4(),
       username: this.state.currentUser.name,
-      content: content
+      content: content,
+      type: "postMessage"
     };
 
     const messages = this.state.messages.concat(newMessage)
-    this.setState({ messages: messages })
+    //this.setState({ messages: messages })
     ws.send(JSON.stringify(newMessage));
   }
 
-  addNewUser(content){
-
-    console.log("state:", content);
-
-     this.setState({ currentUser: { name: content }})
+  addNewUser = (content) => {
+    let msg = {
+      type: "postNotification",
+      content: `${this.state.currentUser.name} changed their name to ${content}.`
+    }
+    console.log("addNewUser", msg);
+    ws.send(JSON.stringify(msg));
+    this.setState({ currentUser: { name: content }});
   }
+
 
 
   render() {
