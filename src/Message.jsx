@@ -9,7 +9,7 @@ class Message extends Component {
     console.log("props",message);
 
    if (message.type === "incomingMessage") {
-
+      console.log("first",message);
       return (
 
         <li className="message">
@@ -24,7 +24,7 @@ class Message extends Component {
 
     } else if (message.type === "incomingNotification") {
 
-      console.log("inside");
+      console.log("second");
       return (
 
         <li className="notification">

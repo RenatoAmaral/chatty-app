@@ -5,6 +5,7 @@ import Message from "./Message.jsx";
 import uuidv4 from 'uuid/v4';
 
 const ws = new WebSocket("ws://localhost:3001/");
+
 ////////////////////////////////////
 //   React App Parent Component   //
 ////////////////////////////////////
@@ -15,7 +16,7 @@ class App extends Component {
     super(props);
 
     this.state = {
-          currentUser: { name: 'Anonymous' },
+          currentUser: { name: 'Anonymous', activeUsers: '' },
           messages: []
 
         }
@@ -36,15 +37,25 @@ class App extends Component {
       const message = JSON.parse(event.data);
 
       switch(message.type) {
+
         case "incomingMessage":
-          const newMessages = this.state.messages.concat(message)
-          console.log("newMessages:", newMessages);
-          this.setState({ messages: newMessages });
+
+          this.setState({ messages: [...this.state.messages, message]})
+
         break;
 
         case "incomingNotification":
-        console.log( "incomingNotification");
-          this.setState({messages: [...this.state.messages, message]})
+          let users = { currentUser: { ...this.state.currentUser, activeUsers: message.activeUsers } }
+          console.log( "incomingNotification", users);
+          this.setState({ messages: [...this.state.messages, message, users]})
+
+        break;
+
+        case "connectedClients":
+
+          console.log(message.activeUsers);
+          this.setState({ currentUser: { ...this.state.currentUser, activeUsers: message.activeUsers } })
+
         break;
 
         default:
@@ -63,7 +74,7 @@ class App extends Component {
     };
 
     const messages = this.state.messages.concat(newMessage)
-    //this.setState({ messages: messages })
+    console.log( "add ", this.state.currentUser.name)
     ws.send(JSON.stringify(newMessage));
   }
 
@@ -77,18 +88,23 @@ class App extends Component {
     this.setState({ currentUser: { name: content }});
   }
 
-
-
   render() {
 
     return (
 
       <div>
 
+        <nav className="navbar">
+
+          <a href="/" className="navbar-brand">Chatty</a>
+
+          <span id="user_count">{this.state.currentUser.activeUsers} users online</span>
+
+        </nav>
+
         <main className="messages">
 
-            <MessageList messages = {this.state.messages} />
-
+            <MessageList messages = {this.state.messages}/>
         </main>
 
         <ChatBar addNewMessage={this.addNewMessage.bind(this)} addNewUser={this.addNewUser.bind(this)} currentUser={this.state.currentUser} />

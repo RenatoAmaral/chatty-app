@@ -26,8 +26,14 @@ const broadcast = (msg) => {
       }
     });
 }
+
+
 wss.on('connection', function connection(ws) {
 
+  console.log(`'Client connected', Active users: ${wss.clients.size}`);
+  let activeUsers = {activeUsers : wss.clients.size , type : 'connectedClients'}
+  console.log("on" ,activeUsers);
+  broadcast(JSON.stringify(activeUsers))
 
   ws.on('message', function incoming(data) {
 
@@ -36,6 +42,7 @@ wss.on('connection', function connection(ws) {
     switch(message.type) {
       case 'postMessage':
         message.type = 'incomingMessage'
+        console.log(message)
         console.log('incomingMessage')
         break
       case 'postNotification':
@@ -49,6 +56,18 @@ wss.on('connection', function connection(ws) {
     // Broadcast to everyone else.
     broadcast(JSON.stringify(message))
 
+  });
+  ws.on('close', () => {
+
+    console.log(`'Client disconnected', Active users: ${wss.clients.size}`);
+
+    let activeUsers = {activeUsers : wss.clients.size, type: 'connectedClients' }
+    console.log("off",activeUsers);
+    broadcast(JSON.stringify(activeUsers))
+
+
+    // At this point in time wss.clients no longer contains the ws object
+    // of the client who disconnected
   });
 });
 
