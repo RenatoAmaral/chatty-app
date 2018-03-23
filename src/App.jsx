@@ -16,12 +16,12 @@ class App extends Component {
     super(props);
 
     this.state = {
-          currentUser: { name: 'Anonymous', activeUsers: '' },
-          messages: []
+          currentUser: { name: 'Anonymous'},
+          messages: [],
+          activeUsers: ''
 
         }
   }
-
 
 /////////////////////////////////////////////////
 //    Helper Functions requiring this.state    //
@@ -30,34 +30,22 @@ class App extends Component {
 // On successful connection, wait for incoming messages from server
 
   componentDidMount() {
-
     console.log("Connected to chatty-app server");
 
     ws.onmessage = (event) => {
+
       const message = JSON.parse(event.data);
 
       switch(message.type) {
-
         case "incomingMessage":
-
           this.setState({ messages: [...this.state.messages, message]})
-
         break;
-
         case "incomingNotification":
-          let users = { currentUser: { ...this.state.currentUser, activeUsers: message.activeUsers } }
-          console.log( "incomingNotification", users);
-          this.setState({ messages: [...this.state.messages, message, users]})
-
+          this.setState({ messages: [...this.state.messages, message]})
         break;
-
         case "connectedClients":
-
-          console.log(message.activeUsers);
-          this.setState({ currentUser: { ...this.state.currentUser, activeUsers: message.activeUsers } })
-
+          this.setState({ activeUsers: message.activeUsers })
         break;
-
         default:
         throw new Error ("Unknown event type " + message.type);
       }
@@ -67,23 +55,24 @@ class App extends Component {
   addNewMessage(content){
 
     const newMessage = {
-      id: uuidv4(),
-      username: this.state.currentUser.name,
-      content: content,
-      type: "postMessage"
-    };
+            id: uuidv4(),
+            username: this.state.currentUser.name,
+            content: content,
+            type: "postMessage"
+          };
 
     const messages = this.state.messages.concat(newMessage)
-    console.log( "add ", this.state.currentUser.name)
     ws.send(JSON.stringify(newMessage));
   }
 
   addNewUser = (content) => {
     let msg = {
+      id: uuidv4(),
+      username: this.state.currentUser.name,
       type: "postNotification",
       content: `${this.state.currentUser.name} changed their name to ${content}.`
     }
-    console.log("addNewUser", msg);
+
     ws.send(JSON.stringify(msg));
     this.setState({ currentUser: { name: content }});
   }
@@ -98,7 +87,7 @@ class App extends Component {
 
           <a href="/" className="navbar-brand">Chatty</a>
 
-          <span id="user_count">{this.state.currentUser.activeUsers} users online</span>
+          <span id="user_count">{this.state.activeUsers} users online</span>
 
         </nav>
 

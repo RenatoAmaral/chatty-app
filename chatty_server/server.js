@@ -20,19 +20,21 @@ const wss = new SocketServer({ server });
 // the ws parameter in the callback.
 
 const broadcast = (msg) => {
-    wss.clients.forEach(function each(client) {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(msg);
-      }
-    });
+  wss.clients.forEach(function each(client) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(msg);
+    }
+  });
 }
-
 
 wss.on('connection', function connection(ws) {
 
   console.log(`'Client connected', Active users: ${wss.clients.size}`);
-  let activeUsers = {activeUsers : wss.clients.size , type : 'connectedClients'}
-  console.log("on" ,activeUsers);
+  let activeUsers = {
+        activeUsers: wss.clients.size,
+        type: 'connectedClients'
+      }
+
   broadcast(JSON.stringify(activeUsers))
 
   ws.on('message', function incoming(data) {
@@ -42,12 +44,9 @@ wss.on('connection', function connection(ws) {
     switch(message.type) {
       case 'postMessage':
         message.type = 'incomingMessage'
-        console.log(message)
-        console.log('incomingMessage')
         break
       case 'postNotification':
         message.type = 'incomingNotification'
-        console.log('incomingNotification')
         break
       default:
         console.error('Received message with unknown type')
@@ -55,16 +54,16 @@ wss.on('connection', function connection(ws) {
 
     // Broadcast to everyone else.
     broadcast(JSON.stringify(message))
-
   });
+
   ws.on('close', () => {
 
     console.log(`'Client disconnected', Active users: ${wss.clients.size}`);
-
-    let activeUsers = {activeUsers : wss.clients.size, type: 'connectedClients' }
-    console.log("off",activeUsers);
+    let activeUsers = {
+          activeUsers: wss.clients.size,
+          type: 'connectedClients'
+        }
     broadcast(JSON.stringify(activeUsers))
-
 
     // At this point in time wss.clients no longer contains the ws object
     // of the client who disconnected

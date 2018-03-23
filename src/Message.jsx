@@ -6,10 +6,8 @@ class Message extends Component {
   render() {
 
     const message = this.props.message;
-    console.log("props",message);
 
    if (message.type === "incomingMessage") {
-      console.log("first",message);
       return (
 
         <li className="message">
@@ -24,7 +22,6 @@ class Message extends Component {
 
     } else if (message.type === "incomingNotification") {
 
-      console.log("second");
       return (
 
         <li className="notification">
